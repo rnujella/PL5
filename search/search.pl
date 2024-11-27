@@ -1,35 +1,37 @@
-%%%%%%%%%%%%%%%%%%%%%%
-% Main Search Logic
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Pathfinding in search.pl
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Start the search
+% Search function that starts from the initial room and finds the treasure
 search(Actions) :-
-    initial(Start),
-    treasure(Goal),
-    bfs([[state(Start, [], [])]], Goal, Actions).
+    initial(StartRoom),
+    treasure(TreasureRoom),
+    bfs([[state(StartRoom, [], [])]], TreasureRoom, Actions).
 
-% BFS: state(Room, Keys, ActionsSoFar)
-bfs([[state(Room, Keys, Actions)|_]|_], Goal, Actions) :-
-    Room = Goal,
-    reverse(Actions, Actions). % Reverse the actions to return them in correct order
-bfs([[state(Room, Keys, Actions)|Rest]|Queue], Goal, FinalActions) :-
+% Breadth-first search logic
+bfs([[state(CurrentRoom, Keys, Path)|_]|_], TargetRoom, Actions) :-
+    CurrentRoom = TargetRoom,
+    reverse(Path, Actions).  % Reverse to show path in correct order
+
+bfs([[state(CurrentRoom, Keys, Path)|Rest]|Queue], TargetRoom, Actions) :-
     findall(
         NextState,
-        next_state(Room, Keys, Actions, NextState),
-        NextStates
+        move_to_next(CurrentRoom, Keys, Path, NextState),
+        NewStates
     ),
-    append(Rest, NextStates, UpdatedQueue),
-    bfs(UpdatedQueue, Goal, FinalActions).
+    append(Queue, NewStates, UpdatedQueue),
+    bfs(Rest, TargetRoom, Actions).
 
-% Define possible transitions (next state)
-next_state(Room, Keys, Actions, state(NextRoom, Keys, [move(Room, NextRoom)|Actions])) :-
-    door(Room, NextRoom),
-    (   locked_door(Room, NextRoom, LockColor),
+% Define valid transitions between rooms
+move_to_next(CurrentRoom, Keys, Path, state(NextRoom, Keys, [move(CurrentRoom, NextRoom)|Path])) :-
+    door(CurrentRoom, NextRoom),
+    (   locked_door(CurrentRoom, NextRoom, LockColor),
         member(LockColor, Keys)
-    ;   \+ locked_door(Room, NextRoom, _)
+    ;   \+ locked_door(CurrentRoom, NextRoom, _)
     ),
-    \+ member(move(Room, NextRoom), Actions).
+    \+ member(move(CurrentRoom, NextRoom), Path).
 
-next_state(Room, Keys, Actions, state(Room, [KeyColor|Keys], [take_key(Room, KeyColor)|Actions])) :-
-    key(Room, KeyColor),
-    \+ member(KeyColor, Keys).
+% Handle picking up keys
+move_to_next(CurrentRoom, Keys, Path, state(CurrentRoom, [NewKey|Keys], [take(CurrentRoom, NewKey)|Path])) :-
+    key(CurrentRoom, NewKey),
+    \+ member(NewKey, Keys).
