@@ -1,26 +1,22 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Parser for a specific sequence
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+parse(Tokens) :-
+    phrase(lines, Tokens).
 
-% Define valid parsing rules
-parse([X|Xs]) :-
-    parse_expression([X|Xs]).
+lines --> line, [';'], lines.
+lines --> line.
 
-% Base case for the parser: a simple number
-parse_expression([Num|Rest]) :-
-    number_string(_, Num),
-    parse_more(Rest).
+line --> num, [','], line.
+line --> num.
 
-% Define a comma separated list after the first number
-parse_more([',', X|Rest]) :-
-    parse_expression([X|Rest]).
-    
-parse_more([;|Rest]) :-
-    parse_more_statement(Rest).
+num --> digit.
+num --> digit, num.
 
-% Parser for the semi-colon and further parts of the sequence
-parse_more_statement([X|Rest]) :-
-    number_string(_, X),
-    parse_more(Rest).
-
-parse_more([]).  % End of input
+digit --> ['0'].
+digit --> ['1'].
+digit --> ['2'].
+digit --> ['3'].
+digit --> ['4'].
+digit --> ['5'].
+digit --> ['6'].
+digit --> ['7'].
+digit --> ['8'].
+digit --> ['9'].
