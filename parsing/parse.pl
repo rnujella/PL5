@@ -1,22 +1,14 @@
-parse(Tokens) :-
-    phrase(lines, Tokens).
+%%%%%%%%%%%%%%%%%
+% Parsing Logic
+%%%%%%%%%%%%%%%%%
 
-lines --> line, [';'], lines.
-lines --> line.
+parse(X) :-
+    phrase(expression, X).
 
-line --> num, [','], line.
-line --> num.
+expression --> number, rest.
 
-num --> digit.
-num --> digit, num.
+rest --> [','], expression.
+rest --> [';'], expression.
+rest --> [].
 
-digit --> ['0'].
-digit --> ['1'].
-digit --> ['2'].
-digit --> ['3'].
-digit --> ['4'].
-digit --> ['5'].
-digit --> ['6'].
-digit --> ['7'].
-digit --> ['8'].
-digit --> ['9'].
+number --> [Token], { number_string(_, Token) }.
